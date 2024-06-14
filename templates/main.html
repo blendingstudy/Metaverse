@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metaverse Exhibition</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <script>
+        const socket = io('http://127.0.0.1:8081');
+
+        let scene = new THREE.Scene();
+        let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        let renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        let light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(0, 1, 1).normalize();
+        scene.add(light);
+
+        scene.background = new THREE.Color(0xcce0ff); // 배경 색상 설정
+
+        // 캐릭터 및 사용자 관리
+        let users = {};
+
+        // 사용자 추가 함수
+        function addUser(username) {
+            let geometry = new THREE.BoxGeometry();
+            let material = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+            let cube = new THREE.Mesh(geometry, material);
+            scene.add(cube);
+
+            let canvas = document.createElement('canvas');
+            let context = canvas.getContext('2d');
+            context.font = 'Bold 50px Arial';
+            context.fillStyle = 'rgba(255,255,255,0.95)';
+            context.fillText(username, 0, 50); // 이름 위치 조정
+
+            let texture = new THREE.CanvasTexture(canvas);
+            let spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+            let sprite = new THREE.Sprite(spriteMaterial);
+            sprite.scale.set(6, 3, 1); // 스프라이트 크기 조정
+            sprite.position.set(0, 3, 0); // 스프라이트 위치 조정
+        
+            scene.add(sprite);
+
+            users[username] = { cube: cube, sprite: sprite };
+        }
+
+        // 로그인한 사용자 이름 가져오기
+        const username = localStorage.getItem('username');
+
+        // 자신의 캐릭터 추가
+        addUser(username);
+
+        // 현재 연결된 모든 사용자 추가
+        socket.on('user_list', (usernames) => {
+            usernames.forEach((user) => {
+                if (user !== username) {
+                    addUser(user);
+                }
+            });
+        });
+
+        // 다른 사용자 추가
+        socket.on('user_connected', (data) => {
+            if (data.username !== username) {
+                addUser(data.username);
+            }
+        });
+
+        // 다른 사용자가 떠날 때 처리
+        socket.on('user_disconnected', (data) => {
+            let user = users[data.username];
+            if (user) {
+                scene.remove(user.cube);
+                scene.remove(user.sprite);
+                delete users[data.username];
+            }
+        });
+
+        // 다른 사용자의 위치 업데이트
+        socket.on('update_position', (data) => {
+            let user = users[data.username];
+            if (user) {
+                user.cube.position.set(data.position.x, data.position.y, data.position.z);
+                user.sprite.position.set(data.position.x+2, data.position.y + 1, data.position.z);
+            }
+        });
+
+        socket.on('connect', () => {
+            socket.emit('add_user', { username: username });
+        });
+
+        // 카메라 위치 설정
+        camera.position.set(0, 2, 10);
+        camera.lookAt(users[username].cube.position);
+
+        // 키보드 입력 감지
+        let keys = {};
+        window.addEventListener('keydown', (event) => { keys[event.code] = true; });
+        window.addEventListener('keyup', (event) => { keys[event.code] = false; });
+
+        // 캐릭터 이동 함수
+        function moveCharacter() {
+            let user = users[username];
+            let moved = false;
+
+            if (keys['ArrowUp']) {
+                user.cube.position.y += 0.1;
+                moved = true;
+            }
+            if (keys['ArrowDown']) {
+                user.cube.position.y -= 0.1;
+                moved = true;
+            }
+            if (keys['ArrowLeft']) {
+                user.cube.position.x -= 0.1;
+                moved = true;
+            }
+            if (keys['ArrowRight']) {
+                user.cube.position.x += 0.1;
+                moved = true;
+            }
+
+            user.sprite.position.set(user.cube.position.x+2, user.cube.position.y + 1, user.cube.position.z); // 스프라이트 위치 업데이트
+
+            // 캐릭터가 움직였을 경우 서버에 위치 업데이트 이벤트 전송
+            if (moved) {
+                socket.emit('update_position', {
+                    username: username,
+                    position: {
+                        x: user.cube.position.x,
+                        y: user.cube.position.y,
+                        z: user.cube.position.z
+                    }
+                });
+            }
+        }
+
+        // 애니메이션 루프
+        function animate() {
+            requestAnimationFrame(animate);
+            moveCharacter();
+            renderer.render(scene, camera);
+        }
+
+        // 창 크기 변경 시 카메라 비율 조정
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>
