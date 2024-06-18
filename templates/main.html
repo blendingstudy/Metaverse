@@ -7,9 +7,68 @@
     <style>
         body { margin: 0; }
         canvas { display: block; }
+        .chat-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            max-width: 300px;
+            background-color: #f0f0f0;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+        }
+        .chat-messages {
+            max-height: 200px;
+            overflow-y: scroll;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .message {
+            margin-bottom: 5px;
+        }
+        .message strong {
+            color: #555;
+        }
+        .message-content {
+            margin-left: 10px;
+        }
+        .message-form {
+            margin-top: 10px;
+        }
+        .message-input {
+            width: calc(100% - 70px);
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 3px 0 0 3px;
+        }
+        .message-submit {
+            width: 70px;
+            padding: 8px;
+            font-size: 14px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 0 3px 3px 0;
+            cursor: pointer;
+        }
+        .message-submit:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
+    <div class="chat-container">
+        <div class="chat-messages" id="chat-messages"></div>
+        <form class="message-form" id="message-form">
+            <input type="text" class="message-input" id="input-message" autocomplete="off" placeholder="Type your message...">
+            <button type="submit" class="message-submit">Send</button>
+        </form>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
@@ -137,107 +196,138 @@
 
         // 다른 사용자가 떠날 때 처리
         socket.on('user_disconnected', (data) => {
-            let user = users[data.username];
-            if (user) {
-                scene.remove(user.model);
-                scene.remove(user.sprite);
-                world.remove(user.body);
-                delete users[data.username];
-            }
-        });
+           
+                let user = users[data.username];
+                if (user) {
+                    scene.remove(user.model);
+                    scene.remove(user.sprite);
+                    world.remove(user.body);
+                    delete users[data.username];
+                }
+            });
 
-        // 다른 사용자의 위치 업데이트
-        socket.on('update_position', (data) => {
-            let user = users[data.username];
-            if (user) {
-                user.model.position.set(data.position.x, data.position.y, data.position.z);
-                user.sprite.position.set(data.position.x, data.position.y + 2, data.position.z);
-                user.body.position.set(data.position.x, data.position.y, data.position.z);
-            }
-        });
+            // 다른 사용자의 위치 업데이트
+            socket.on('update_position', (data) => {
+                let user = users[data.username];
+                if (user) {
+                    user.model.position.set(data.position.x, data.position.y, data.position.z);
+                    user.sprite.position.set(data.position.x, data.position.y + 2, data.position.z);
+                    user.body.position.set(data.position.x, data.position.y, data.position.z);
+                }
+            });
 
-        socket.on('connect', () => {
-            socket.emit('add_user', { username: username });
-        });
+            socket.on('connect', () => {
+                socket.emit('add_user', { username: username });
+            });
 
-        // 카메라 위치 설정
-        camera.position.set(0, 5, 15);
+            // 카메라 위치 설정
+            camera.position.set(0, 5, 15);
 
-        // 키보드 입력 감지
-        let keys = {};
-        window.addEventListener('keydown', (event) => { keys[event.code] = true; });
-        window.addEventListener('keyup', (event) => { keys[event.code] = false; });
+            // 키보드 입력 감지
+            let keys = {};
+            window.addEventListener('keydown', (event) => { keys[event.code] = true; });
+            window.addEventListener('keyup', (event) => { keys[event.code] = false; });
 
-        // 캐릭터 이동 함수
-        function moveCharacter() {
-            let user = users[username];
-            let moved = false;
-            const speed = 10; // 속도 값을 증가시킴
+            // 캐릭터 이동 함수
+            function moveCharacter() {
+                let user = users[username];
+                let moved = false;
+                const speed = 10; // 속도 값을 증가시킴
 
-            user.body.velocity.set(0, 0, 0); // 기존 속도 초기화
+                user.body.velocity.set(0, 0, 0); // 기존 속도 초기화
 
-            if (keys['ArrowUp']) {
-                user.body.velocity.z = -speed; // z 방향으로 이동
-                moved = true;
-            }
-            if (keys['ArrowDown']) {
-                user.body.velocity.z = speed; // z 방향으로 이동
-                moved = true;
-            }
-            if (keys['ArrowLeft']) {
-                user.body.velocity.x = -speed; // x 방향으로 이동
-                moved = true;
-            }
-            if (keys['ArrowRight']) {
-                user.body.velocity.x = speed; // x 방향으로 이동
-                moved = true;
-            }
+                if (keys['ArrowUp']) {
+                    user.body.velocity.z = -speed; // z 방향으로 이동
+                    moved = true;
+                }
+                if (keys['ArrowDown']) {
+                    user.body.velocity.z = speed; // z 방향으로 이동
+                    moved = true;
+                }
+                if (keys['ArrowLeft']) {
+                    user.body.velocity.x = -speed; // x 방향으로 이동
+                    moved = true;
+                }
+                if (keys['ArrowRight']) {
+                    user.body.velocity.x = speed; // x 방향으로 이동
+                    moved = true;
+                }
 
-            // 스프라이트 위치 업데이트
-            user.sprite.position.set(user.model.position.x, user.model.position.y + 2, user.model.position.z);
+                // 스프라이트 위치 업데이트
+                user.sprite.position.set(user.model.position.x, user.model.position.y + 2, user.model.position.z);
 
-            // 카메라가 캐릭터를 따라가도록 설정
-            camera.position.set(user.model.position.x, user.model.position.y + 5, user.model.position.z + 10);
-            camera.lookAt(user.model.position);
+                // 카메라가 캐릭터를 따라가도록 설정
+                camera.position.set(user.model.position.x, user.model.position.y + 5, user.model.position.z + 10);
+                camera.lookAt(user.model.position);
 
-            // 캐릭터가 움직였을 경우 서버에 위치 업데이트 이벤트 전송
-            if (moved) {
-                socket.emit('update_position', {
-                    username: username,
-                    position: {
-                        x: user.body.position.x,
-                        y: user.body.position.y,
-                        z: user.body.position.z
-                    }
-                });
-            }
-        }
-
-        // 애니메이션 루프
-        function animate() {
-            requestAnimationFrame(animate);
-            moveCharacter();
-
-            // Cannon.js 월드 업데이트
-            world.step(1 / 60);
-
-            // 모델 위치 업데이트
-            for (let key in users) {
-                let user = users[key];
-                user.model.position.copy(user.body.position);
+                // 캐릭터가 움직였을 경우 서버에 위치 업데이트 이벤트 전송
+                if (moved) {
+                    socket.emit('update_position', {
+                        username: username,
+                        position: {
+                            x: user.body.position.x,
+                            y: user.body.position.y,
+                            z: user.body.position.z
+                        }
+                    });
+                }
             }
 
-            renderer.render(scene, camera);
-        }
+            // 애니메이션 루프
+            function animate() {
+                requestAnimationFrame(animate);
+                moveCharacter();
 
-        // 창 크기 변경 시 카메라 비율 조정
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+                // Cannon.js 월드 업데이트
+                world.step(1 / 60);
 
-        animate();
-    </script>
-</body>
+                // 모델 위치 업데이트
+                for (let key in users) {
+                    let user = users[key];
+                    user.model.position.copy(user.body.position);
+                }
+
+                renderer.render(scene, camera);
+            }
+
+            // 창 크기 변경 시 카메라 비율 조정
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            animate();
+
+            // 채팅 관련 코드 시작
+            const chatForm = document.getElementById('message-form');
+            const chatInput = document.getElementById('input-message');
+            const chatMessages = document.getElementById('chat-messages');
+
+            // 채팅 메시지 받기
+            socket.on('chat_message', (data) => {
+                appendMessage(data.username, data.message);
+            });
+
+            // 메시지 전송
+            chatForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const message = chatInput.value;
+                if (message) {
+                    socket.emit('send_message', { username: username, message: message });
+                    appendMessage(username, message);
+                    chatInput.value = '';
+                }
+            });
+
+            // 메시지 추가
+            function appendMessage(username, message) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                messageElement.innerHTML = `<strong>${username}:</strong> <span class="message-content">${message}</span>`;
+                chatMessages.appendChild(messageElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        </script>
+    </body>
 </html>

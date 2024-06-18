@@ -33,6 +33,12 @@ def handle_add_user(data):
     connected_users[username] = request.sid
     emit('user_connected', data, broadcast=True)
 
+@socketio.on('send_message')
+def handle_chat_message(data):
+    print(f'Message from {data["username"]}: {data["message"]}')
+    emit('chat_message', {'username': data['username'], 'message': data['message']}, broadcast=True,include_self=False)
+
+
 @socketio.on('disconnect')
 def handle_disconnect():
     username = None
