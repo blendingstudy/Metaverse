@@ -328,6 +328,112 @@
                 chatMessages.appendChild(messageElement);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
+
+         
+// 문과 문의 physics body 정의
+let door, doorBody;
+
+// 부스 생성 함수
+function createBooth(width, height, depth, x, y, z, texturePath, hasDoor = false) {
+    const textureLoader = new THREE.TextureLoader();
+    const boothGeometry = new THREE.BoxGeometry(width, height, depth);
+    const boothMaterial = new THREE.MeshPhongMaterial({
+        map: textureLoader.load(texturePath)
+    });
+    const booth = new THREE.Mesh(boothGeometry, boothMaterial);
+    booth.position.set(x, y, z);
+    scene.add(booth);
+
+    // Cannon.js physics body 생성
+    const boothShape = new CANNON.Box(new CANNON.Vec3(width / 2, height / 2, depth / 2));
+    const boothBody = new CANNON.Body({ mass: 0 });
+    boothBody.addShape(boothShape);
+    boothBody.position.set(x, y, z);
+    world.addBody(boothBody);
+
+    // 부스 내부에 문 추가 여부 확인
+    if (hasDoor) {
+        const doorWidth = 2;
+        const doorHeight = height;
+        const doorDepth = 0.1;
+
+        // 문의 geometry와 material 설정
+        const doorGeometry = new THREE.BoxGeometry(doorWidth, doorHeight, doorDepth);
+        const doorMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
+        door = new THREE.Mesh(doorGeometry, doorMaterial);
+
+        // 문의 위치 설정 (부스 내부에 배치)
+        door.position.set(0, 0, depth / 2 + doorDepth / 2); // 부스 내부 중앙에 문을 배치하도록 수정
+
+        // Three.js scene에 문 추가
+        booth.add(door);
+
+        // Cannon.js physics body 생성
+        const doorShape = new CANNON.Box(new CANNON.Vec3(doorWidth / 2, doorHeight / 2, doorDepth / 2));
+        doorBody = new CANNON.Body({ mass: 0 });
+        doorBody.addShape(doorShape);
+
+        // 문의 위치 설정 (부스 내부에 배치)
+        doorBody.position.set(x, y, z);
+        doorBody.position.vadd(new CANNON.Vec3(0, 0, depth / 2 + doorDepth / 2), boothBody.position); // Cannon.js에서 부스 내부 위치에 문을 추가하도록 수정
+
+        // 부스 내부에 문 physics body 추가
+        world.addBody(doorBody);
+    }
+
+    // 문을 열고 닫을 수 있는 함수
+    booth.openDoor = function() {
+        if (door) door.visible = false; // 문을 열기 위해 문 객체를 보이지 않도록 설정
+        if (doorBody) world.removeBody(doorBody); // Cannon.js에서 문 physics body 제거
+    };
+
+    booth.closeDoor = function() {
+        if (door) door.visible = true; // 문을 닫기 위해 문 객체를 보이게 설정
+        if (doorBody) world.addBody(doorBody); // Cannon.js에서 문 physics body 추가
+    };
+
+    return booth;
+}
+
+
+
+            // 부스 배치 함수
+            function setupBooths() {
+                const boothTextures = [
+                    '../static/images/2145.jpg',
+                    '../static/images/2145.jpg',
+                    '../static/images/2145.jpg',
+                    '../static/images/2145.jpg',
+                    '../static/images/2145.jpg'
+                ];
+                const boothPositions = [
+                    { x: 10, y: 2.5, z: 30 },
+                    { x: -30, y: 2.5, z: 0 },
+                    { x: 0, y: 2.5, z: 10 },
+                    { x: 30, y: 2.5, z: -10 },
+                    { x: 100, y: 2.5, z: 15 }
+                ];
+
+                for (let i = 0; i < boothPositions.length; i++) {
+                    const booth = createBooth(10, 5, 10, boothPositions[i].x, boothPositions[i].y, boothPositions[i].z, boothTextures[i],true);
+                    decorateBooth(booth);
+                    booth.openDoor(); 
+                }
+            }
+
+            // 부스 내부 장식 함수
+            function decorateBooth(booth) {
+                const itemGeometry = new THREE.BoxGeometry(2, 2, 2);
+                const itemMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+                const item = new THREE.Mesh(itemGeometry, itemMaterial);
+                item.position.set(0, 1, 0);
+                booth.add(item);
+
+              
+            }
+
+            // 부스 생성 및 장식 함수 호출
+            setupBooths();
         </script>
     </body>
 </html>
