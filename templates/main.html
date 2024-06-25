@@ -68,6 +68,10 @@
             <button type="submit" class="message-submit">Send</button>
         </form>
     </div>
+    <div class="photo-description" id="photo-description">
+        <strong>Photo Description:</strong>
+        <p id="description-content">This is an amazing photo taken at the Metaverse Exhibition.</p>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
@@ -501,6 +505,9 @@ function isCharacterNearDoor(characterPosition, doorPosition, distance) {
 const booth = createBoothWithDoor(10, 5, 10, 0, 2.5, 0, '../static/images/2145.jpg', 2, 5, 0.1);
 booth.openDoor();
 
+const booth2 = createBoothWithDoor(8, 6, 8, -15, 3, 0, '../static/images/2145.jpg', 1.5, 4, 0.1);
+booth2.openDoor();
+
 window.addEventListener('keydown', (e) => {
     if (e.code === 'Space') {
         let user = users[username];
@@ -514,6 +521,35 @@ window.addEventListener('keydown', (e) => {
         }
     }
 });
+
+
+// 텍스처 로드: TextureLoader를 사용하여 이미지 로드
+const textureLoader = new THREE.TextureLoader();
+const photoTexture = textureLoader.load('../static/images/짱구.jpeg'); // 여기서 이미지 경로를 실제 이미지 경로로 바꿉니다.
+
+// 부스 안에 사진을 전시하는 함수 생성
+function createPhotoWall(width, height, x, y, z, texture) {
+    const wallGeometry = new THREE.PlaneGeometry(width, height);
+    const wallMaterial = new THREE.MeshBasicMaterial({ map: texture });
+
+    const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+    wall.position.set(x, y, z); // 필요에 따라 위치 조정
+    scene.add(wall);
+
+    // 만약 물리적 바디가 필요하다면 추가합니다.
+    // 예시:
+    // const wallShape = new CANNON.Box(new CANNON.Vec3(width / 2, height / 2, 0.1));
+    // const wallBody = new CANNON.Body({ mass: 0 });
+    // wallBody.addShape(wallShape);
+    // wallBody.position.set(x, y, z);
+    // world.addBody(wallBody);
+
+    return wall;
+}
+
+// 사용 예시: 부스 내부에 사진을 전시하는 평면을 생성합니다.
+const photoWall = createPhotoWall(10, 5, 0, 2, -4, photoTexture); // 부스의 크기와 위치에 따라 크기와 위치를 조정합니다.
+scene.add(photoWall);
 
         
         </script>
