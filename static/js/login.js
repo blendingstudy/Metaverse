@@ -23,3 +23,13 @@ document.getElementById('loginForm').addEventListener('submit', function(event) 
         console.error('Error:', error);
     });
 });
+
+document.getElementById('showSignup').addEventListener('click', function() {
+    document.getElementById('login-container').classList.remove('active');
+    document.getElementById('signup-container').classList.add('active');
+});
+
+document.getElementById('showLogin').addEventListener('click', function() {
+    document.getElementById('signup-container').classList.remove('active');
+    document.getElementById('login-container').classList.add('active');
+});

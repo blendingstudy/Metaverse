@@ -35,3 +35,15 @@ body {
 .login-container button:hover {
     background-color: #218838;
 }
+.form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+.login-container, .signup-container {
+    display: none;
+}
+.active {
+    display: block;
+}

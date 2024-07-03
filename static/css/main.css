@@ -50,4 +50,17 @@ canvas { display: block; }
 }
 .message-submit:hover {
     background-color: #45a049;
+}.logout-button {
+    display: block;
+    padding: 8px 15px;
+    background-color: #ff4b5c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.logout-button:hover {
+    background-color: #e04350;
 }
