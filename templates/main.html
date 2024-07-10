@@ -15,6 +15,22 @@
         </form>
         <button type="button" class="logout-button" id="logout-button">Logout</button>
     </div>
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" id="file-input" name="file" accept="image/*">
+        <select id="booth-number" name="booth-number">
+            <option value="1">Booth 1</option>
+            <option value="2">Booth 2</option>
+            <option value="3">Booth 3</option>
+            <option value="4">Booth 4</option>
+            <option value="5">Booth 5</option>
+            <option value="6">Booth 6</option>
+            <option value="7">Booth 7</option>
+            <option value="8">Booth 8</option>
+            <option value="9">Booth 9</option>
+        </select>
+        <button type="submit">Upload</button>
+    </form>
+
   
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>

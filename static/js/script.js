@@ -157,6 +157,7 @@ socket.on('user_disconnected', (data) => {
 
     socket.on('connect', () => {
         socket.emit('add_user', { username: username });
+        console.log('Connected to server');
     });
 
     // 카메라 위치 설정
@@ -495,3 +496,62 @@ const photoWall = createPhotoWall(4, 2, 0, 2, -4, photoTexture); // 부스의 �
 const photoWall2 = createPhotoWall(4, 2, -50, 3,- 3.5, photoTexture2); // 부스의 크기와 위치에 맞게 조정
 scene.add(photoWall);
 
+const uploadForm = document.getElementById('upload-form');
+const fileInput = document.getElementById('file-input');
+const boothNumberInput = document.getElementById('booth-number');
+
+
+const boothPositions = {
+    1: { x: 0, y: 2, z: -4 },
+    2: { x: 5, y: 2, z: -4 },
+    3: { x: 10, y: 2, z: -4 },
+    4: { x: 15, y: 2, z: -4 },
+    5: { x: 0, y: 2, z: 0 },
+    6: { x: 5, y: 2, z: 0 },
+    7: { x: 10, y: 2, z: 0 },
+    8: { x: 15, y: 2, z: 0 },
+    9: { x: 20, y: 2, z: 0 }
+};
+
+uploadForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const file = fileInput.files[0];
+    const boothNumber = boothNumberInput.value;
+
+    if (file && boothNumber) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('boothNumber', boothNumber);
+
+        fetch('http://localhost:8081/upload', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            const filePath = data.filePath;
+            const boothNumber = data.boothNumber;
+            const boothPosition = boothPositions[boothNumber];
+            socket.emit('photo_uploaded', { filePath: filePath, boothPosition: boothPosition });
+        })
+        .catch(error => console.error('Error uploading file:', error));
+    }
+});
+
+socket.on('display_photo', (data) => {
+    const textureLoader = new THREE.TextureLoader();
+    const photoTexture = textureLoader.load(data.filePath);
+    console.log("데이터 받았다");
+    createPhotoWall(4, 2, data.boothPosition.x, data.boothPosition.y, data.boothPosition.z, photoTexture);
+});
+
+function createPhotoWall(width, height, x, y, z, texture) {
+    const wallGeometry = new THREE.PlaneGeometry(width, height);
+    const wallMaterial = new THREE.MeshBasicMaterial({ map: texture });
+
+    const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+    wall.position.set(x, y, z);
+    scene.add(wall);
+
+    return wall;
+}

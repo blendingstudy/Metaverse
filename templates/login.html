@@ -6,20 +6,7 @@
     <title>Login and Signup Form</title>
     <link rel="stylesheet" href="../static/css/login.css">
     <link rel="stylesheet" href="../static/css/signup.css">
-    <style>
-        .form-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .login-container, .signup-container {
-            display: none;
-        }
-        .active {
-            display: block;
-        }
-    </style>
+   
 </head>
 <body>
     <div class="form-container">
@@ -46,16 +33,6 @@
     </div>
     <script src="../static/js/login.js"></script>
     <script src="../static/js/signup.js"></script>
-    <script>
-        document.getElementById('showSignup').addEventListener('click', function() {
-            document.getElementById('login-container').classList.remove('active');
-            document.getElementById('signup-container').classList.add('active');
-        });
-
-        document.getElementById('showLogin').addEventListener('click', function() {
-            document.getElementById('signup-container').classList.remove('active');
-            document.getElementById('login-container').classList.add('active');
-        });
-    </script>
+   
 </body>
 </html>

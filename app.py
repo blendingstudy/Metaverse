@@ -1,9 +1,11 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 from config import Config
+import os
 from models import db
-from routes import bp
+from routes import bp, init_socketio
+from werkzeug.utils import secure_filename
 
 def create_app():
     app = Flask(__name__)
@@ -15,9 +17,15 @@ def create_app():
     CORS(app)
     socketio = SocketIO(app, cors_allowed_origins="*")
 
+    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+        os.makedirs(app.config['UPLOAD_FOLDER'])
+
     return app, socketio
 
 app, socketio = create_app()
+
+# routes.py에서 소켓 객체를 사용할 수 있도록 초기화
+init_socketio(socketio)
 
 # 사용자 관리 딕셔너리
 connected_users = {}
@@ -36,8 +44,7 @@ def handle_add_user(data):
 @socketio.on('send_message')
 def handle_chat_message(data):
     print(f'Message from {data["username"]}: {data["message"]}')
-    emit('chat_message', {'username': data['username'], 'message': data['message']}, broadcast=True,include_self=False)
-
+    emit('chat_message', {'username': data['username'], 'message': data['message']}, broadcast=True, include_self=False)
 
 @socketio.on('disconnect')
 def handle_disconnect():
