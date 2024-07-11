@@ -491,10 +491,7 @@ scene.add(wall);
 return wall;
 }
 
-// 사용 예시: 부스 내부에 사진을 전시하는 평면을 생성합니다.
-const photoWall = createPhotoWall(4, 2, 0, 2, -4, photoTexture); // 부스의 크기와 위치에 따라 크기와 위치를 조정합니다.
-const photoWall2 = createPhotoWall(4, 2, -50, 3,- 3.5, photoTexture2); // 부스의 크기와 위치에 맞게 조정
-scene.add(photoWall);
+
 
 const uploadForm = document.getElementById('upload-form');
 const fileInput = document.getElementById('file-input');
@@ -513,11 +510,24 @@ const boothPositions = {
     9: { x: 20, y: 2, z: 0 }
 };
 
+function displayPhoto(data) {
+    const textureLoader = new THREE.TextureLoader();
+    const photoTexture = textureLoader.load(data.filePath);
+    createPhotoWall(4, 2, data.boothPosition.x, data.boothPosition.y, data.boothPosition.z, photoTexture);
+}
+
+socket.on('display_existing_photos', (photos) => {
+    photos.forEach(photo => {
+        const boothPosition = boothPositions[photo.boothNumber];
+        displayPhoto({ filePath: photo.filePath, boothPosition });
+    });
+});
+
+
 uploadForm.addEventListener('submit', (event) => {
     event.preventDefault();
     const file = fileInput.files[0];
     const boothNumber = boothNumberInput.value;
-
     if (file && boothNumber) {
         const formData = new FormData();
         formData.append('file', file);
@@ -542,16 +552,7 @@ socket.on('display_photo', (data) => {
     const textureLoader = new THREE.TextureLoader();
     const photoTexture = textureLoader.load(data.filePath);
     console.log("데이터 받았다");
-    createPhotoWall(4, 2, data.boothPosition.x, data.boothPosition.y, data.boothPosition.z, photoTexture);
+    const photoWall=createPhotoWall(4, 2, data.boothPosition.x, data.boothPosition.y, data.boothPosition.z, photoTexture);
+    scene.add(photoWall);
 });
 
-function createPhotoWall(width, height, x, y, z, texture) {
-    const wallGeometry = new THREE.PlaneGeometry(width, height);
-    const wallMaterial = new THREE.MeshBasicMaterial({ map: texture });
-
-    const wall = new THREE.Mesh(wallGeometry, wallMaterial);
-    wall.position.set(x, y, z);
-    scene.add(wall);
-
-    return wall;
-}
