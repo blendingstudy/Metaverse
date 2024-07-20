@@ -157,6 +157,7 @@ socket.on('user_disconnected', (data) => {
 
     socket.on('connect', () => {
         socket.emit('add_user', { username: username });
+        socket.emit('connect_display');
         console.log('Connected to server');
     });
 
@@ -499,15 +500,15 @@ const boothNumberInput = document.getElementById('booth-number');
 
 
 const boothPositions = {
-    1: { x: 0, y: 2, z: -4 },
-    2: { x: 5, y: 2, z: -4 },
-    3: { x: 10, y: 2, z: -4 },
-    4: { x: 15, y: 2, z: -4 },
+    1: { x: -50, y: 2, z: -50 },
+    2: { x: 0, y: 2, z: -50 },
+    3: { x: 50, y: 2, z: -50 },
+    4: { x: -50, y: 2, z: 0 },
     5: { x: 0, y: 2, z: 0 },
-    6: { x: 5, y: 2, z: 0 },
-    7: { x: 10, y: 2, z: 0 },
-    8: { x: 15, y: 2, z: 0 },
-    9: { x: 20, y: 2, z: 0 }
+    6: { x: 50, y: 2, z: 0 },
+    7: { x: -50, y: 2, z: 50 },
+    8: { x: 0, y: 2, z: 50 },
+    9: { x: 50, y: 2, z: 50 }
 };
 
 function displayPhoto(data) {
@@ -519,6 +520,7 @@ function displayPhoto(data) {
 socket.on('display_existing_photos', (photos) => {
     photos.forEach(photo => {
         const boothPosition = boothPositions[photo.boothNumber];
+        console.log(photo.filePath);
         displayPhoto({ filePath: photo.filePath, boothPosition });
     });
 });

@@ -3,8 +3,8 @@ from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 from config import Config
 import os
-from models import db
-from routes import bp, init_socketio
+from models import db, Users, BoothImage
+from routes import bp
 from werkzeug.utils import secure_filename
 
 def create_app():
@@ -24,16 +24,16 @@ def create_app():
 
 app, socketio = create_app()
 
-# routes.py에서 소켓 객체를 사용할 수 있도록 초기화
-init_socketio(socketio)
-
-# 사용자 관리 딕셔너리
 connected_users = {}
 
 # 소켓 이벤트 핸들러 추가
-@socketio.on('connect')
+@socketio.on('connect_display')
 def handle_connect():
     emit('user_list', list(connected_users.keys()))
+    print("이미지 보냈다")
+    images = BoothImage.query.all()
+    data = [{'filePath': image.file_path, 'boothNumber': image.booth_number} for image in images]
+    socketio.emit('display_existing_photos', data)
 
 @socketio.on('add_user')
 def handle_add_user(data):
@@ -60,6 +60,13 @@ def handle_disconnect():
 @socketio.on('update_position')
 def handle_update_position(data):
     emit('update_position', data, broadcast=True, include_self=False)
+ 
+
+@socketio.on('photo_uploaded')
+def handle_photo_uploaded(data):
+        print('photo_uploaded event received:', data)
+        socketio.emit('display_photo', data)
+        print("전시하자")
 
 if __name__ == '__main__':
     socketio.run(app, host='127.0.0.1', port=8081)

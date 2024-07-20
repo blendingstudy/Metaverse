@@ -1,5 +1,5 @@
 from flask import Blueprint, send_from_directory, request, jsonify, current_app
-from models import db, Users,BoothImage
+from models import db, Users, BoothImage
 from werkzeug.utils import secure_filename
 import os
 import uuid
@@ -64,14 +64,12 @@ def upload_file():
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
     if file and allowed_file(file.filename):
-        # Generate unique filename using UUID
         unique_filename = str(uuid.uuid4())
         file_extension = os.path.splitext(file.filename)[1]
         filename = secure_filename(unique_filename + file_extension)
         filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
 
-        # 파일 경로와 부스 번호를 데이터베이스에 저장
         new_booth_image = BoothImage(booth_number=booth_number, file_path=f'uploads/{filename}')
         db.session.add(new_booth_image)
         db.session.commit()
@@ -84,25 +82,4 @@ def upload_file():
 @bp.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
-
-socketio = None  # 전역 소켓 객체
-
-def init_socketio(sock):
-    global socketio
-    socketio = sock
-
-    @socketio.on('connect')
-    def handle_connect():
-        # 클라이언트가 연결되면 데이터베이스에서 모든 이미지를 가져와 클라이언트로 보냄
-        
-        images = BoothImage.query.all()
-        data = [{'filePath': image.file_path, 'boothNumber': image.booth_number} for image in images]
-        socketio.emit('display_existing_photos', data)   
-        print("이미지 보냈다")
-
-    @socketio.on('photo_uploaded')
-    def handle_photo_uploaded(data):
-        print('photo_uploaded event received:', data)
-        socketio.emit('display_photo', data)
-        print("전시하자")
 
