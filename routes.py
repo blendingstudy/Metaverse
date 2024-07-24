@@ -22,6 +22,7 @@ def login():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
+  
 
     if not username or not password:
         return jsonify({'success': False, 'message': 'Missing data'}), 400
@@ -29,10 +30,9 @@ def login():
     user = Users.query.filter_by(username=username).first()
 
     if user and user.password == password:
-        return jsonify({'success': True, 'username': username}), 200
+        return jsonify({'success': True, 'username': username, 'is_admin': user.is_admin}), 200
     else:
         return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
-
 @bp.route('/signup', methods=['POST'])
 def signup():
     data = request.get_json()
