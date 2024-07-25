@@ -246,8 +246,79 @@ renderer.render(scene, camera);
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
+/// 텍스트를 생성하는 함수
+function createTextLabel(text, position) {
+    const loader = new THREE.FontLoader();
+    loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json',
+        (font) => {
+            const textGeometry = new THREE.TextGeometry(text, {
+                font: font,
+                size: 1,
+                height: 0.1,
+                curveSegments: 12,
+            });
 
-    animate();
+            const textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+            const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+
+            // 텍스트의 중심을 맞추기 위한 계산
+            textGeometry.computeBoundingBox();
+            const boundingBox = textGeometry.boundingBox;
+            const centerOffset = -0.5 * (boundingBox.max.x - boundingBox.min.x);
+            textMesh.position.set(position.x+2 + centerOffset, position.y + 2.5, position.z+1); // y를 조정하여 패널 위에 위치하도록 함
+
+            scene.add(textMesh);
+        },
+        undefined, // onProgress
+        (error) => {
+            console.error('An error happened while loading the font.', error);
+        }
+    );
+}
+
+// 패널과 텍스트를 생성하는 함수
+function createBoothPanel(booth) {
+    const boothGeometry = new THREE.BoxGeometry(5, 5, 1);
+    const boothMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+    const boothMesh = new THREE.Mesh(boothGeometry, boothMaterial);
+    boothMesh.position.set(booth.x, booth.y, booth.z);
+    scene.add(boothMesh);
+
+    // 부스에 텍스트 추가
+    createTextLabel(`${booth.name}\n${booth.description}`, boothMesh.position);
+
+    return boothMesh;
+}
+
+// 예시 부스 배열
+const booths = [
+    { name: 'Booth 1', description: 'Description for booth 2', x: -40, y: 2.5, z: -50 },
+    { name: 'Booth 2', description: 'Description for booth 2', x: 10, y: 2.5, z: -50 },
+    { name: 'Booth 3', description: 'Description for booth 2', x: 60, y: 2.5, z: -50 },
+    { name: 'Booth 4', description: 'Description for booth 2', x: -40, y: 2.5, z: 0 },
+    { name: 'Booth 5', description: 'Description for booth 2', x: 10, y: 2.5, z: 0 },
+    { name: 'Booth 6', description: 'Description for booth 2', x: 60, y: 2.5, z: 0 },
+    { name: 'Booth 7', description: 'Description for booth 2', x: -40, y: 2.5, z: 50 },
+    { name: 'Booth 8', description: 'Description for booth 2', x: 10, y: 2.5, z: 50 },
+    { name: 'Booth 9', description: 'Description for booth 2', x: 60, y: 2.5, z: 50 },
+   
+   
+   
+];
+
+// 부스 생성
+booths.forEach(booth => {
+    createBoothPanel(booth);
+});
+
+// 애니메이션 루프
+function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+}
+
+animate();
+
 
     // 채팅 관련 코드 시작
     const chatForm = document.getElementById('message-form');
