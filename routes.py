@@ -1,5 +1,5 @@
 from flask import Blueprint, send_from_directory, request, jsonify, current_app
-from models import db, Users, BoothImage
+from models import db, Users, BoothImage, Booth
 from werkzeug.utils import secure_filename
 import os
 import uuid
@@ -76,8 +76,9 @@ def upload_file():
         print("파일 저장 완료")
 
         return jsonify({'filePath': f'uploads/{filename}', 'boothNumber': booth_number}), 200
-
-    return jsonify({'error': 'File not allowed'}), 400
+    else:
+        
+         return jsonify(f"파일 확장자: {filename.rsplit('.', 1)[1].lower()}"), 400
 
 @bp.route('/uploads/<filename>')
 def uploaded_file(filename):

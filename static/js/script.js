@@ -605,6 +605,7 @@ uploadForm.addEventListener('submit', (event) => {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('boothNumber', boothNumber);
+     
 
         fetch('http://localhost:8081/upload', {
             method: 'POST',
@@ -615,7 +616,12 @@ uploadForm.addEventListener('submit', (event) => {
             const filePath = data.filePath;
             const boothNumber = data.boothNumber;
             const boothPosition = boothPositions[boothNumber];
+      
+           if (file.type.startsWith('video')) {
+                createVideoWall(4, 2, boothPosition.x, boothPosition.y, boothPosition.z, data.filePath);
+            }else{
             socket.emit('photo_uploaded', { filePath: filePath, boothPosition: boothPosition });
+            }
         })
         .catch(error => console.error('Error uploading file:', error));
     }
@@ -629,3 +635,28 @@ socket.on('display_photo', (data) => {
     scene.add(photoWall);
 });
 
+
+
+
+// Video 텍스처를 생성하는 함수
+function createVideoWall(width, height, x, y, z, videoPath) {
+    const video = document.createElement('video');
+    video.src = videoPath;
+    video.autoplay = true;
+    video.loop = true;
+    video.load();
+    video.play();
+
+    const videoTexture = new THREE.VideoTexture(video);
+    videoTexture.minFilter = THREE.LinearFilter;
+    videoTexture.magFilter = THREE.LinearFilter;
+
+    const wallGeometry = new THREE.PlaneGeometry(width, height);
+    const wallMaterial = new THREE.MeshBasicMaterial({ map: videoTexture });
+
+    const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+    wall.position.set(x, y, z);
+    scene.add(wall);
+
+    return wall;
+}
