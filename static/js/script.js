@@ -311,11 +311,7 @@ booths.forEach(booth => {
     createBoothPanel(booth);
 });
 
-// 애니메이션 루프
-function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
-}
+
 
 animate();
 
