@@ -35,3 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+document.getElementById('showLogin').addEventListener('click', function() {
+    document.getElementById('signup-container').classList.remove('active');
+    document.getElementById('login-container').classList.add('active');
+});

@@ -3,6 +3,7 @@ const socket = io('http://127.0.0.1:8081');
 let scene = new THREE.Scene();
 let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 let renderer = new THREE.WebGLRenderer();
+
 // 카메라 초기 위치 설정
 camera.position.set(0, 5, 15);
 
@@ -292,15 +293,15 @@ function createBoothPanel(booth) {
 
 // 예시 부스 배열
 const booths = [
-    { name: 'Booth 1', description: 'Description for booth 2', x: -40, y: 2.5, z: -50 },
-    { name: 'Booth 2', description: 'Description for booth 2', x: 10, y: 2.5, z: -50 },
-    { name: 'Booth 3', description: 'Description for booth 2', x: 60, y: 2.5, z: -50 },
-    { name: 'Booth 4', description: 'Description for booth 2', x: -40, y: 2.5, z: 0 },
-    { name: 'Booth 5', description: 'Description for booth 2', x: 10, y: 2.5, z: 0 },
-    { name: 'Booth 6', description: 'Description for booth 2', x: 60, y: 2.5, z: 0 },
-    { name: 'Booth 7', description: 'Description for booth 2', x: -40, y: 2.5, z: 50 },
-    { name: 'Booth 8', description: 'Description for booth 2', x: 10, y: 2.5, z: 50 },
-    { name: 'Booth 9', description: 'Description for booth 2', x: 60, y: 2.5, z: 50 },
+    { name: 'Booth 1', description: '1번부스의 설명입니다.', x: -40, y: 2.5, z: -50 },
+    { name: 'Booth 2', description: '2번부스의 설명입니다.', x: 10, y: 2.5, z: -50 },
+    { name: 'Booth 3', description: '3번부스의 설명입니다.', x: 60, y: 2.5, z: -50 },
+    { name: 'Booth 4', description: '4번부스의 설명입니다.', x: -40, y: 2.5, z: 0 },
+    { name: 'Booth 5', description: '5번부스의 설명입니다.', x: 10, y: 2.5, z: 0 },
+    { name: 'Booth 6', description: '6번부스의 설명입니다.', x: 60, y: 2.5, z: 0 },
+    { name: 'Booth 7', description: '7번부스의 설명입니다.', x: -40, y: 2.5, z: 50 },
+    { name: 'Booth 8', description: '8번부스의 설명입니다.', x: 10, y: 2.5, z: 50 },
+    { name: 'Booth 9', description: '9번부스의 설명입니다.', x: 60, y: 2.5, z: 50 },
    
    
    
@@ -531,6 +532,16 @@ if (user) {
     }
 }
 }
+if(e.code === 'KeyA')
+    {
+        let user = users[username];
+if (user) {
+    
+    let distance = user.body.position.distanceTo(walls[0].position);
+    console.log(distance);
+    
+}
+    }
 });
 
 
@@ -592,6 +603,7 @@ socket.on('display_existing_photos', (photos) => {
     });
 });
 
+const walls = [];
 
 uploadForm.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -614,7 +626,8 @@ uploadForm.addEventListener('submit', (event) => {
             const boothPosition = boothPositions[boothNumber];
       
            if (file.type.startsWith('video')) {
-                createVideoWall(4, 2, boothPosition.x, boothPosition.y, boothPosition.z, data.filePath);
+                const wall1=createVideoWall(4, 2, boothPosition.x, boothPosition.y, boothPosition.z, data.filePath);
+                walls.push(wall1);
             }else{
             socket.emit('photo_uploaded', { filePath: filePath, boothPosition: boothPosition });
             }
@@ -638,7 +651,7 @@ socket.on('display_photo', (data) => {
 function createVideoWall(width, height, x, y, z, videoPath) {
     const video = document.createElement('video');
     video.src = videoPath;
-    video.autoplay = true;
+    video.autoplay = false;
     video.loop = true;
     video.load();
     video.play();
@@ -654,5 +667,18 @@ function createVideoWall(width, height, x, y, z, videoPath) {
     wall.position.set(x, y, z);
     scene.add(wall);
 
-    return wall;
+    return {
+        wall: wall,
+        video: video,
+        playVideo: function() {
+            video.play();
+        },
+        pauseVideo: function() {
+            video.pause();
+        },
+        stopVideo: function() {
+            video.pause();
+            video.currentTime = 0;
+        }
+    };
 }

@@ -41,3 +41,7 @@ document.getElementById('signupForm').addEventListener('submit', function(event)
         alert('An error occurred during sign up.');
     });
 });
+document.getElementById('showSignup').addEventListener('click', function() {
+    document.getElementById('login-container').classList.remove('active');
+    document.getElementById('signup-container').classList.add('active');
+});

@@ -23,7 +23,7 @@ def login():
     username = data.get('username')
     password = data.get('password')
   
-    print(username)
+ 
     if not username or not password:
         return jsonify({'success': False, 'message': 'Missing data'}), 400
 
