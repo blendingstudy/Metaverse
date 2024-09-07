@@ -16,7 +16,10 @@
         <button type="button" class="logout-button" id="logout-button">Logout</button>
     </div>
     <form id="upload-form" enctype="multipart/form-data">
-        <input type="file" id="file-input" name="file" accept="image/*,video/*">
+        <div id="file-input-container">
+            <label for="file-input" class="custom-file-upload"></label>
+            <input type="file" id="file-input" name="file" accept="image/*,video/*">
+        </div>
         <select id="booth-number" name="booth-number">
             <option value="1">Booth 1</option>
             <option value="2">Booth 2</option>
@@ -31,7 +34,16 @@
         <button type="submit">Upload</button>
     </form>
 
+    <button type="button" class="mypage-button" id="mypage-button">My Page</button>
   
+       <!-- Mypage 모달 창 -->
+       <div id="mypage-modal" class="mypage-modal">
+        <div class="mypage-modal-content">
+            <span class="close">&times;</span>
+            <div id="mypage-content"></div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
@@ -42,5 +54,6 @@
     <script src="../static//js/login.js"></script>
     <script src="../static//js/panel.js"></script>
     <script src="../static//js/main.js"></script>
+    <script src="../static//js/mypage.js"></script>
     </body>
 </html>

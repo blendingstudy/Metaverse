@@ -17,6 +17,10 @@ def serve_index():
 def serve_main():
     return send_from_directory('templates', 'main.html')
 
+@bp.route('/mypage')
+def serve_mypage():
+    return send_from_directory('templates', 'mypage.html')
+
 @bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -84,3 +88,21 @@ def upload_file():
 def uploaded_file(filename):
     return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
 
+@bp.route('/api/user-info', methods=['GET'])
+def get_user_info():
+    username = request.args.get('username')
+    
+    if not username:
+        return jsonify({'error': 'Username parameter is required'}), 400
+    
+    user = Users.query.filter_by(username=username).first()
+    
+    if user:
+        user_info = {
+            'username': user.username,
+            'email': user.email,
+            
+        }
+        return jsonify(user_info)
+    else:
+        return jsonify({'error': 'User not found'}), 404
